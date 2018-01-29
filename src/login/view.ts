@@ -1,17 +1,17 @@
-import {h, input, VNode} from '@cycle/dom';
-import {State, Login, GitUser} from "./model";
+import {h, VNode} from '@cycle/dom';
+import {State, Form, GitUser} from "./model";
 import {Stream} from "xstream";
 
-export default function view(state$: Stream<State>) {
-  return state$.map(state => {
-    return state.gitUser ? loggedIn(state.gitUser) : viewForm(state.login);
+export default function view(state$: Stream<[State, VNode, VNode]>) {
+  return state$.map(([state, userInput, passInput]) => {
+    return state.gitUser ? h('div') : renderForm(state.form, userInput, passInput);
   });
 }
 
-function viewForm(login: Login) {
+export function renderForm(form: Form, userInput: VNode, passInput: VNode) {
   return h('div.login', {
     class: {
-      fail: !!login.fail
+      fail: !!form.fail
     }
   }, [
     h('header', [
@@ -20,27 +20,16 @@ function viewForm(login: Login) {
     ]),
     h('div.wrap.card.grey.darken-3', [
       h('form.card-content.white-text', [
-        inputField('user', {
-          name: 'user',
-          type: 'text',
-          value: login.user,
-          placeholder: 'GitHub username'
-        }),
-        inputField('pass', {
-          name: 'pass',
-          type: 'password',
-          value: login.pass,
-          placeholder: 'GitHub password'
-        }),
+        userInput,
+        passInput,
+        form.spin ? h('div.progress', h('div.indeterminate')) :
         h('button.submit.btn-large.waves-effect.waves-light', {
-          attrs: {
-            type: 'submit'
-          }
+          attrs: { type: 'submit' }
         }, [
           h('i.material-icons.left', 'send'),
           h('strong', 'Log in with GitHub')
         ]),
-        login.fail ? h('div.message', login.fail) : null
+        form.fail ? h('div.message', form.fail) : null
       ])
     ])
   ]);
@@ -51,16 +40,5 @@ function inputField(className: string, attrs: any) {
     h('div.input-field.col', [
       h('input', { attrs: attrs })
     ])
-  ]);
-}
-
-function loggedIn(u: GitUser) {
-  return h('div.user', [
-    h('img', {
-      attrs: { width: 200, height: 200, src: u.avatar_url },
-    }),
-    h('a', {
-      attrs: { href: u.html_url },
-    }, u.login)
   ]);
 }

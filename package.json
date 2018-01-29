@@ -8,10 +8,12 @@
   "dependencies": {
     "@cycle/dom": "^20",
     "@cycle/http": "^14",
+    "@cycle/isolate": "^3.2.0",
     "@cycle/run": "^4",
     "@cycle/storage": "^5",
     "@cycle/time": "^0.12",
     "awesome-typescript-loader": "^3",
+    "cycle-onionify": "^5.0.0",
     "github-api": "^3",
     "typescript": "^2.5.3",
     "xstream": "^11"

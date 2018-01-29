@@ -3,6 +3,12 @@ import { RequestOptions } from '@cycle/http';
 import { Action, LoginAction } from './actions';
 import * as actions from './actions';
 
+export interface State {
+  action: Action
+  form: Form
+  gitUser?: GitUser
+}
+
 export interface GitUser {
   login: string
   html_url: string
@@ -10,81 +16,81 @@ export interface GitUser {
   following: number
 }
 
-export interface State {
-  action: Action
-  login: Login
-  gitUser?: GitUser
-}
-
-export interface Login {
+export interface Form {
   user: string
   pass: string
   fail?: string
+  spin: boolean
 }
 
-const initialState: State = {
+type Reducer = (s: State | undefined) => State;
+
+export const initialState: State = {
   action: { type: 'login' }, // last action
-  login: {
+  form: {
     user: 'ornicar',
     pass: '',
-    fail: 'Bad credentials'
+    spin: false
   }
 }
 
-function record<A extends Action>(id: (s: State, a: A) => State) {
-  return function(a: A) {
+function record<A extends Action>(id: (s: State, a: A) => void) {
+  return function(a: A): Reducer {
     return function(s: State) {
       s.action = a;
-      return id(s, a);
+      // operate on a cloned state,
+      // or else onionify will ignore the new state
+      const state = {...s};
+      id(state, a);
+      return state;
     };
   };
 }
 
-// MAKE REDUCER STREAM
-// A function that takes the actions on the todo list
-// and returns a stream of "reducers": functions that expect the current
-// todosData (the state) and return a new version of todosData.
-function makeReducer$(action$: Stream<Action>): Stream<(s: State) => State> {
+export default function model(action$: Stream<Action>): Stream<Reducer> {
+
+  const defaultReducer$ = xs.of((prevState: State) =>
+    (typeof prevState === 'undefined') ? initialState : prevState
+  )
 
   return xs.merge(
 
+    defaultReducer$,
+
     action$.filter(actions.isInput)
       .map(record((state, action) => {
-        state.login[action.name] = action.value;
-        state.login.fail = undefined;
+        state.form[action.name] = action.value;
+        state.form.fail = undefined;
         state.gitUser = undefined;
-        return state;
       })),
 
       action$.filter(actions.isLogin)
         .map(record((state, action) => {
-          state.login.fail = undefined;
+          state.form.fail = undefined;
           state.gitUser = undefined;
-          return state;
+          state.form.spin = true;
         })),
 
         action$.filter(actions.isGitUser)
-        .map(record((state, action) => {
-          state.login.fail = undefined;
-          state.gitUser = action.gitUser;
-          return state;
-        })),
+          .map(record((state, action) => {
+            state.form.fail = undefined;
+            state.gitUser = action.gitUser;
+            state.form.spin = false;
+          })),
 
-        action$.filter(actions.isLoginFail)
-        .map(record((state, action) => {
-          state.login.fail = action.message;
-          state.gitUser = undefined;
-          return state;
-        }))
+          action$.filter(actions.isLoginFail)
+            .map(record((state, action) => {
+              state.form.fail = action.message;
+              state.gitUser = undefined;
+              state.form.spin = false;
+            })),
+
+            action$.filter(actions.isLogout)
+              .map(record((state, action) => {
+                state.form.fail = undefined;
+                state.gitUser = undefined;
+                state.form.spin = false;
+              }))
+
   );
-}
-
-export default function model(action$: Stream<Action>): Stream<State> {
-
-  const reducer$ = makeReducer$(action$);
-
-  return reducer$.fold((state, reducer) => reducer(state), initialState)
-  // Make this remember its latest event, so late listeners
-  // will be updated with the latest state.
-  .remember();
 }
