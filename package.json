@@ -9,6 +9,7 @@
     "@cycle/dom": "^20",
     "@cycle/http": "^14",
     "@cycle/run": "^4",
+    "@cycle/storage": "^5",
     "@cycle/time": "^0.12",
     "awesome-typescript-loader": "^3",
     "github-api": "^3",
