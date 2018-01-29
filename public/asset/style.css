@@ -1,0 +1,31 @@
+.login {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+}
+.login header {
+  text-align: center;
+  margin: 3em;
+}
+.login .wrap {
+  width: 300px;
+}
+.login .card {
+  border: 3px solid transparent;
+  transition: border-color 0.3s;
+}
+.login.fail .card {
+  border-color: #d32f2f;
+}
+.login.fail .message {
+  color: #d32f2f;
+  margin-top: 2em;
+}
+.login form .row {
+  margin-bottom: 0;
+}
+.login .submit {
+  margin-top: 1em;
+  width: 100%;
+}
