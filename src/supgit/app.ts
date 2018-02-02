@@ -30,17 +30,23 @@ export type Sinks = {
 
 type Reducer = (s: State) => State;
 
+function initData(s: string) {
+  const d = JSON.parse(s);
+  d.login.form.spin = false;
+  return d;
+}
+
 export default function SupGit(sources: Sources): Sinks {
 
   const initialState$: Stream<State> = sources.storage.local.getItem<string>('supgit')
     .take(1)
-    .map(s => (s ? JSON.parse(s) : { login: loginInitialState }) as State);
+    .map(s => (s ? initData(s) : { login: loginInitialState }) as State);
 
-  const state$ = sources.onion.state$.debug();
+  const state$ = sources.onion.state$;
 
   const login = isolate(Login, 'login')(sources);
 
-  const reducer$: Stream<Reducer> = initialState$.debug().map(init =>
+  const reducer$: Stream<Reducer> = initialState$.map(init =>
     xs.merge(
       xs.of((_: State) => init),
       (login.onion as Stream<Reducer>)

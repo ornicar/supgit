@@ -4,6 +4,7 @@ import {DOMSource, VNode, makeDOMDriver} from '@cycle/dom'
 import {HTTPSource,RequestOptions} from '@cycle/http'
 import isolate, { Component } from '@cycle/isolate'
 import {StateSource} from 'cycle-onionify'
+import sampleCombine from 'xstream/extra/sampleCombine'
 import Input, { Sinks as InputSinks } from '../input/app'
 import * as actions from './actions'
 import model, {State} from './model'
@@ -11,15 +12,15 @@ import * as http from './http'
 import view from './view'
 
 export type Sources = {
-  DOM : DOMSource;
-  HTTP: HTTPSource;
-  onion: StateSource<State>;
+  DOM : DOMSource
+  HTTP: HTTPSource
+  onion: StateSource<State>
 }
 
 export type Sinks = {
-  DOM : Stream<VNode>;
-  HTTP : Stream<RequestOptions>;
-  onion: Stream<(s: State) => State>;
+  DOM : Stream<VNode>
+  HTTP : Stream<RequestOptions>
+  onion: Stream<(s: State) => State>
 }
 
 export default function Login(sources: Sources): Sinks {
@@ -48,7 +49,9 @@ export default function Login(sources: Sources): Sinks {
 
   const vdom$ = view(xs.combine(state$, tokenInput.DOM));
 
-  const request$ = http.request(state$);
+  const actionState$ = action$.compose(sampleCombine(state$));
+
+  const request$ = http.request(actionState$);
 
   return {
     DOM: vdom$,

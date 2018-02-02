@@ -11,7 +11,6 @@
     "@cycle/isolate": "^3.2.0",
     "@cycle/run": "^4",
     "@cycle/storage": "^5",
-    "@cycle/time": "^0.12",
     "awesome-typescript-loader": "^3",
     "cycle-onionify": "^5",
     "cycle-storageify": "^4",

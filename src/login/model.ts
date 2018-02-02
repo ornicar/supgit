@@ -4,7 +4,6 @@ import { Action, LoginAction } from './actions';
 import * as actions from './actions';
 
 export interface State {
-  action: Action
   form: Form
   gitUser?: GitUser
 }
@@ -25,7 +24,6 @@ export interface Form {
 type Reducer = (s: State | undefined) => State;
 
 export const initialState: State = {
-  action: { type: 'login' }, // last action
   form: {
     token: ''
     // fail: 'Bad credentials'
@@ -35,7 +33,6 @@ export const initialState: State = {
 function record<A extends Action>(id: (s: State, a: A) => void) {
   return function(a: A): Reducer {
     return function(s: State) {
-      s.action = a;
       // operate on a cloned state,
       // or else onionify will ignore the new state
       const state = {...s};

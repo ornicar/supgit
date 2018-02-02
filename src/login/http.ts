@@ -4,14 +4,14 @@ import * as actions from './actions';
 import { State, GitUser } from './model';
 import {HTTPSource,RequestOptions} from '@cycle/http'
 
-export function request(state$: Stream<State>): Stream<RequestOptions> {
+export function request(from$: Stream<[Action, State]>): Stream<RequestOptions> {
 
   const endpoint = 'https://api.github.com/';
 
   return xs.merge(
 
-    state$.filter(s => actions.isLogin(s.action) && !!s.form.token)
-      .map(s => ({
+    from$.debug().filter(([action, state]) => actions.isLogin(action) && !!state.form.token)
+      .map(([_, s]) => ({
         url: endpoint + 'user',
         headers: {
           Authorization: 'token ' + s.form.token
