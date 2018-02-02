@@ -2,13 +2,13 @@ import {h, VNode} from '@cycle/dom';
 import {State, Form, GitUser} from "./model";
 import {Stream} from "xstream";
 
-export default function view(state$: Stream<[State, VNode, VNode]>) {
-  return state$.map(([state, userInput, passInput]) => {
-    return state.gitUser ? h('div') : renderForm(state.form, userInput, passInput);
+export default function view(state$: Stream<[State, VNode]>) {
+  return state$.map(([state, tokenInput]) => {
+    return state.gitUser ? h('div') : renderForm(state.form, tokenInput);
   });
 }
 
-export function renderForm(form: Form, userInput: VNode, passInput: VNode) {
+export function renderForm(form: Form, tokenInput: VNode) {
   return h('div.login', {
     class: {
       fail: !!form.fail
@@ -20,8 +20,7 @@ export function renderForm(form: Form, userInput: VNode, passInput: VNode) {
     ]),
     h('div.wrap.card.grey.darken-3', [
       h('form.card-content.white-text', [
-        userInput,
-        passInput,
+        tokenInput,
         form.spin ? h('div.progress', h('div.indeterminate')) :
         h('button.submit.btn-large.waves-effect.waves-light', {
           attrs: { type: 'submit' }

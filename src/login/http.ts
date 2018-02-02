@@ -10,11 +10,12 @@ export function request(state$: Stream<State>): Stream<RequestOptions> {
 
   return xs.merge(
 
-    state$.filter(s => actions.isLogin(s.action) && !!s.form.user && !!s.form.pass)
+    state$.filter(s => actions.isLogin(s.action) && !!s.form.token)
       .map(s => ({
-        url: endpoint + 'users/' + s.form.user,
-        user: s.form.user,
-        password: s.form.pass,
+        url: endpoint + 'user',
+        headers: {
+          Authorization: 'token ' + s.form.token
+        },
         category: 'gitUser',
         method: 'GET'
       })).debug()

@@ -5,7 +5,6 @@ import {HTTPSource,RequestOptions} from '@cycle/http'
 import isolate, { Component } from '@cycle/isolate'
 import {StateSource} from 'cycle-onionify'
 import Input, { Sinks as InputSinks } from '../input/app'
-import intent from './intent'
 import * as actions from './actions'
 import model, {State} from './model'
 import * as http from './http'
@@ -25,35 +24,29 @@ export type Sinks = {
 
 export default function Login(sources: Sources): Sinks {
 
-  const userInput: InputSinks = isolate(Input, 'form.user')({
+  const tokenInput: InputSinks = isolate(Input, 'form.token')({
     DOM: sources.DOM,
     props: xs.of({
-      name: 'user',
-      placeholder: 'GitHub username',
-      value: 'ornicar'
-    })
-  });
-  const passInput: InputSinks = isolate(Input, 'form.pass')({
-    DOM: sources.DOM,
-    props: xs.of({
-      name: 'pass',
-      type: 'password',
-      placeholder: 'GitHub password'
+      name: 'token',
+      placeholder: 'GitHub token'
     })
   });
 
   const action$ = xs.merge(
-    intent(sources.DOM),
+    sources.DOM.select('form').events('submit')
+      .map(ev => {
+        ev.preventDefault();
+        return <actions.LoginAction> {type: 'login'}
+      }),
     http.response(sources.HTTP),
-    userInput.value.map(v => (<actions.InputAction> {type: 'input', name: 'user', value: v})),
-    passInput.value.map(v => (<actions.InputAction> {type: 'input', name: 'pass', value: v}))
+    tokenInput.value.map(v => <actions.InputAction> {type: 'input', name: 'token', value: v}),
   );
 
   const reducer$ = model(action$);
 
   const state$ = sources.onion.state$;
 
-  const vdom$ = view(xs.combine(state$, userInput.DOM, passInput.DOM));
+  const vdom$ = view(xs.combine(state$, tokenInput.DOM));
 
   const request$ = http.request(state$);
 

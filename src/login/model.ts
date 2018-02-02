@@ -17,10 +17,9 @@ export interface GitUser {
 }
 
 export interface Form {
-  user: string
-  pass: string
+  token: string
   fail?: string
-  spin: boolean
+  spin?: boolean
 }
 
 type Reducer = (s: State | undefined) => State;
@@ -28,9 +27,8 @@ type Reducer = (s: State | undefined) => State;
 export const initialState: State = {
   action: { type: 'login' }, // last action
   form: {
-    user: 'ornicar',
-    pass: '',
-    spin: false
+    token: ''
+    // fail: 'Bad credentials'
   }
 }
 
@@ -49,13 +47,7 @@ function record<A extends Action>(id: (s: State, a: A) => void) {
 
 export default function model(action$: Stream<Action>): Stream<Reducer> {
 
-  const defaultReducer$ = xs.of((prevState: State) =>
-    (typeof prevState === 'undefined') ? initialState : prevState
-  )
-
   return xs.merge(
-
-    defaultReducer$,
 
     action$.filter(actions.isInput)
       .map(record((state, action) => {
