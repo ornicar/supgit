@@ -40,7 +40,7 @@ export default function Login(sources: Sources): Sinks {
         return <actions.LoginAction> {type: 'login'}
       }),
     http.response(sources.HTTP),
-    tokenInput.value.map(v => <actions.InputAction> {type: 'input', name: 'token', value: v}),
+    tokenInput.value.map(v => <actions.InputAction> {type: 'input', name: 'token', value: v}).debug('input'),
   );
 
   const reducer$ = model(action$);
